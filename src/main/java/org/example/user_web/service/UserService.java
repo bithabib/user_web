@@ -20,7 +20,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void saveUser(User user) {
+    public User saveUser(User user) {
         if (user.getId() != null) {
             // Update user
             User existingUser = userRepository.findById(user.getId())
@@ -43,6 +43,7 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             userRepository.save(user);
         }
+        return user;
     }
 
 
@@ -76,5 +77,27 @@ public class UserService {
 
     public User findByEmail(String email) {
         return userRepository.findByEmail(email).orElse(null);
+    }
+
+    public User getUserById(Long id) {
+        return userRepository.findById(id).orElse(null);
+    }
+
+    public User updateUser(Long id, User user) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        existingUser.setFirstName(user.getFirstName());
+        existingUser.setLastName(user.getLastName());
+        existingUser.setAge(user.getAge());
+        existingUser.setEmail(user.getEmail());
+        existingUser.setRole(user.getRole());
+
+        // Only encode if password is provided
+        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+            existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+
+        return userRepository.save(existingUser);
     }
 }

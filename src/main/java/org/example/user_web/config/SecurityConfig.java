@@ -31,22 +31,27 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomLoginSuccessHandler successHandler) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/register", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/api/**").authenticated() // Protect REST API
                         .anyRequest().authenticated()
                 )
+                // Form login for web UI
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
                         .usernameParameter("username")
                         .passwordParameter("password")
-                        .successHandler(successHandler) // <-- Use custom success handler
+                        .successHandler(successHandler)
                         .permitAll()
+                )
+                // HTTP Basic for REST API
+                .httpBasic(httpBasic -> httpBasic
+                        .realmName("User API") // optional, can set custom realm
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
